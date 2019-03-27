@@ -26,25 +26,18 @@ namespace GenericApplication {
         ///   { true, false } => "True,False"
         ///   { ConsoleColor.Black, ConsoleColor.Blue, ConsoleColor.Cyan } => "Black,Blue,Cyan"
         ///   { new TimeSpan(1, 0, 0), new TimeSpan(0, 0, 30) } => "01:00:00,00:00:30",
-        ///   If list == null => return "", if element in list == null dont write it(element n-1, element n+1)
+        ///   If list == null => return "", if element n in list ==""  write like this(element n-1,,element n+1)
         /// </example>
         /// 
 
-        
+
         public static string ConvertToString<T>(this IEnumerable<T> list)  // метод расширения
         {
             if (list == null)
                 return "";
 
-            StringBuilder sb = new StringBuilder();
-            foreach (T l in list)
-            {
-                sb.Append((l != null ? ListSeparator + l.ToString() : ""));
-            }
 
-            sb.Remove(0, 1);
-
-            return sb.ToString();
+            return String.Join(ListSeparator.ToString(), list.ToArray<T>());
         }
 
         /// <summary>
@@ -64,14 +57,14 @@ namespace GenericApplication {
         ///  "1:00:00,0:00:30" for TimeSpan =>  { new TimeSpan(1, 0, 0), new TimeSpan(0, 0, 30) },
         ///  If list is "" return collection=null
         ///  </example>
-        
+
         public static IEnumerable<T> ConvertToList<T>(this string list) {
             if (list == "")
                 return null;
 
             string[] items = list.Split(new char[] { ListSeparator }, StringSplitOptions.RemoveEmptyEntries);
-            
-            List<T> collection=new List<T>();
+
+            List<T> collection = new List<T>();
 
             TypeConverter typeCon = TypeDescriptor.GetConverter(typeof(T));
             foreach (string item in items)
@@ -81,7 +74,7 @@ namespace GenericApplication {
             }
 
             return collection;
-            
+
             // TODO : Implement ConvertToList<T>
             // HINT : Use TypeConverter.ConvertFromString method to parse string value TypeConverter.ConvertFromString()
             //throw new NotImplementedException();
@@ -102,8 +95,7 @@ namespace GenericApplication {
         {
             if (array == null)
                 throw new NullReferenceException();
-            if ((index1 < 0 || index1 > array.Length - 1) || (index2 < 0 || index2 > array.Length - 1))
-                throw new IndexOutOfRangeException();
+
             if (index1 == index2)
                 return;
 
@@ -146,36 +138,36 @@ namespace GenericApplication {
                                                                                                                         where T2 : System.IComparable<T2>
                                                                                                                         where T3 : System.IComparable<T3>
         {
-            Tuple<T1, T2, T3>[] result = array;
 
             switch (sortedColumn)
             {
 
                 case 0:
-                    result = ascending ? array.OrderBy(x => x.Item1).ToArray() : array.OrderByDescending(x => x.Item1).ToArray();
+                    if (ascending)
+                        Array.Sort(array, (x, y) => x.Item1.CompareTo(y.Item1));
+                    else
+                        Array.Sort(array, (x, y) => y.Item1.CompareTo(x.Item1));
 
                     break;
                 case 1:
-                    result = ascending ? array.OrderBy(x => x.Item2).ToArray() : array.OrderByDescending(x => x.Item2).ToArray();
+                    if (ascending)
+                        Array.Sort(array, (x, y) => x.Item2.CompareTo(y.Item2));
+                    else
+                        Array.Sort(array, (x, y) => y.Item2.CompareTo(x.Item2));
 
                     break;
                 case 2:
-                    result = ascending ? array.OrderBy(x => x.Item3).ToArray() : array.OrderByDescending(x => x.Item3).ToArray();
+                    if (ascending)
+                        Array.Sort(array, (x, y) => x.Item3.CompareTo(y.Item3));
+                    else
+                        Array.Sort(array, (x, y) => y.Item3.CompareTo(x.Item3));
 
                     break;
                 default:
                     throw new IndexOutOfRangeException();
 
-
-
                     // TODO :SortTupleArray<T1, T2, T3>
                     // HINT : Add required constraints to generic types
-            }
-            // поскольку нельзы вызвать ref для метода расширения
-            for (int i = 0; i < array.Length; i++)
-            {
-                array[i] = result[i];
-
             }
         }
     }
@@ -186,25 +178,20 @@ namespace GenericApplication {
     ///   This code should return the same MyService object every time:
     ///   MyService singleton = Singleton<MyService>.Instance;
     /// </example>
-    public static class Singleton<T> where T : class, new() {
+    public class Singleton<T> where T: class, new (){
         // TODO : Implement generic singleton class 
-        
-    public static T Instance { get { return InternalContainer.Instance; }}
-        
-    private class InternalContainer
+
+    private Singleton() 
     {
-       
-        public static readonly T Instance;
-                  
-        static InternalContainer() // статический конструктор
-        {
-            Instance = new T();
-        }
     }
+    private static readonly Lazy<T>
+            lazy =
+            new Lazy<T>(() => new T());
+   
+    public static T Instance { get { return lazy.Value; } }
 
-}
-
-
+    }
+    
 
 	public static class FunctionExtentions {
 		/// <summary>
@@ -227,27 +214,28 @@ namespace GenericApplication {
 		/// </example>
 		public static T TimeoutSafeInvoke<T>(this Func<T> function) {
             int maxAttemptCount= 3;
-            List<Exception> exceptions = new List<Exception>();
-            Exception lastException=new Exception();
+            int attempted=0;
 
-            for (int attempted = 0; attempted < maxAttemptCount; attempted++)
-            {   
+            do
+            {
                 try
-                {  
+                {
+                    attempted++;
                     return function();
                 }
                 catch (Exception ex)
                 {
+
                     Trace.WriteLine(ex);
-                    lastException = ex;    
+                    if (attempted == 3)
+                        throw ex;
                 }
             }
+            while (attempted < maxAttemptCount);
 
-            throw lastException;
+            throw new NotImplementedException(); // чем тут лучше заглушить функцию?
 
-           
             // TODO : Implement TimeoutSafeInvoke<T>
-            //throw new NotImplementedException();
         }
 
 
@@ -291,6 +279,5 @@ namespace GenericApplication {
         }
 
 	}
-
 
 }

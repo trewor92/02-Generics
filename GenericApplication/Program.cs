@@ -13,8 +13,8 @@ namespace GenericApplication
     {
         static void Main(string[] args)
         {
-            //IEnumerable<object> list = new List<object>() { 1, "xxxx", null, 2, 3, 4, new TimeSpan(1,0,0),true,ConsoleColor.Blue };
-            //Console.WriteLine(list.ConvertToString());
+            IEnumerable<object> list = new List<object>() { String.Empty,1, "xxxx", null, 2, 3, 4, new TimeSpan(1,0,0),true,ConsoleColor.Blue };
+            Console.WriteLine(list.ConvertToString());
             //string str = "1:0:0,2:0:0,3:0:0,,,,,4:0:0";
             //string str = "1,2,3,,,,,4";
 
