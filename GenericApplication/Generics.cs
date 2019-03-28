@@ -138,37 +138,19 @@ namespace GenericApplication {
                                                                                                                         where T2 : System.IComparable<T2>
                                                                                                                         where T3 : System.IComparable<T3>
         {
+            var koeff = ascending ? +1 : -1;
 
-            switch (sortedColumn)
-            {
+            Func < Tuple<T1, T2, T3>,Tuple<T1, T2, T3>, int>[] comparers = 
+                new Func <Tuple<T1, T2, T3>, Tuple<T1, T2, T3>, int>[] { (x,y) => x.Item1.CompareTo(y.Item1),
+               (x,y) => x.Item2.CompareTo(y.Item2), (x,y) => x.Item3.CompareTo(y.Item3) };
 
-                case 0:
-                    if (ascending)
-                        Array.Sort(array, (x, y) => x.Item1.CompareTo(y.Item1));
-                    else
-                        Array.Sort(array, (x, y) => y.Item1.CompareTo(x.Item1));
+            var getComparer = comparers[sortedColumn];
 
-                    break;
-                case 1:
-                    if (ascending)
-                        Array.Sort(array, (x, y) => x.Item2.CompareTo(y.Item2));
-                    else
-                        Array.Sort(array, (x, y) => y.Item2.CompareTo(x.Item2));
+            Array.Sort(array, (x, y) => koeff* getComparer(x,y));
 
-                    break;
-                case 2:
-                    if (ascending)
-                        Array.Sort(array, (x, y) => x.Item3.CompareTo(y.Item3));
-                    else
-                        Array.Sort(array, (x, y) => y.Item3.CompareTo(x.Item3));
-
-                    break;
-                default:
-                    throw new IndexOutOfRangeException();
-
-                    // TODO :SortTupleArray<T1, T2, T3>
-                    // HINT : Add required constraints to generic types
-            }
+            // TODO :SortTupleArray<T1, T2, T3>
+            // HINT : Add required constraints to generic types
+        }
         }
     }
     /// <summary>
@@ -216,7 +198,7 @@ namespace GenericApplication {
             int maxAttemptCount= 3;
             int attempted=0;
 
-            do
+            while(true)
             {
                 try
                 {
@@ -227,13 +209,13 @@ namespace GenericApplication {
                 {
 
                     Trace.WriteLine(ex);
-                    if (attempted == 3)
+                    if (attempted == maxAttemptCount)
                         throw ex;
                 }
             }
-            while (attempted < maxAttemptCount);
+           
 
-            throw new NotImplementedException(); // чем тут лучше заглушить функцию?
+            //throw new NotImplementedException(); 
 
             // TODO : Implement TimeoutSafeInvoke<T>
         }
@@ -280,4 +262,4 @@ namespace GenericApplication {
 
 	}
 
-}
+
